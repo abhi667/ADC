@@ -78,17 +78,16 @@
 #include "pin.h"
 #include "adc.h"
 
-// Driverlib includes
-#include "hw_common_reg.h"
-#include "hw_memmap.h"
+#include "adc_userinput.h"
+#include "uart_if.h"
+
 #include "hw_types.h"
 #include "hw_ints.h"
 #include "hw_uart.h"
 #include "uart.h"
 #include "prcm.h"
-
-#include "adc_userinput.h"
-
+#include "rom.h"
+#include "rom_map.h"
 #include "systick.h"
 #include "utils.h"
 #include "udma.h"
@@ -97,6 +96,7 @@
 // Common interface includes
 #include "udma_if.h"
 #include "uart_if.h"
+#include "pinmux.h"
 
 
 #define USER_INPUT 
@@ -244,17 +244,9 @@ unsigned short Status;
 UDMAInit();
 PinTypeADC(PIN_59,0xFF);
 MAP_uDMAChannelAssign(UDMA_CH16_ADC_CH2);
-UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_PRI_SELECT, UDMA_MODE_PINGPONG,
-640,
-UDMA_SIZE_32, UDMA_ARB_1,
-(void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE,
-(void *)&(DmaDataDumpPing[0]), UDMA_DST_INC_32);
+UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_PRI_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPing[0]), UDMA_DST_INC_32);
 
-UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
-640,
-UDMA_SIZE_32, UDMA_ARB_1,
-(void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE,
-(void *)&(DmaDataDumpPong[0]), UDMA_DST_INC_32);
+UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPong[0]), UDMA_DST_INC_32);
 
 ADCDMAEnable(ADC_BASE, ADC_CH_2);
 ADCIntRegister(ADC_BASE, ADC_CH_2,ADCIntHandler);

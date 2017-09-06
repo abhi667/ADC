@@ -15,6 +15,7 @@ ORDERED_OBJS += \
 "./pinmux.obj" \
 "./startup_ccs.obj" \
 "./uart_if.obj" \
+"./udma_if.obj" \
 "../cc3200v1p32.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibc.a \
@@ -159,8 +160,8 @@ adc.bin: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "adc_userinput.obj" "main.obj" "pinmux.obj" "startup_ccs.obj" "uart_if.obj" 
-	-$(RM) "adc_userinput.d" "main.d" "pinmux.d" "startup_ccs.d" "uart_if.d" 
+	-$(RM) "adc_userinput.obj" "main.obj" "pinmux.obj" "startup_ccs.obj" "uart_if.obj" "udma_if.obj" 
+	-$(RM) "adc_userinput.d" "main.d" "pinmux.d" "startup_ccs.d" "uart_if.d" "udma_if.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
