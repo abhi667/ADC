@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+// Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
 // 
 // 
 //  Redistribution and use in source and binary forms, with or without 
@@ -37,7 +37,7 @@
 //
 // Application Name     - ADC
 // Application Overview - The application is a reference to usage of ADC DriverLib 
-//                        functions on CC3200. Developers/Users can refer to this 
+//                        functions on CC3200. Developers/Users can refer to this
 //                        simple application and re-use the functions in 
 //                        their applications.
 //
@@ -103,7 +103,7 @@
 #define UART_PRINT         Report
 #define FOREVER            1
 #define APP_NAME           "ADC Reference"
-#define NO_OF_SAMPLES 		128
+#define NO_OF_SAMPLES       640
 
 unsigned long pulAdcSamples[4096];
 
@@ -197,6 +197,7 @@ InitAdcDma();
 
 unsigned long DmaDataDumpPing[640];
 unsigned long DmaDataDumpPong[640];
+int count = 0 ;
 void ADCIntHandler(void)
 {
 unsigned long ulChannelStructIndex, ulMode, ulControl;
@@ -205,20 +206,23 @@ unsigned long *pDataDumpBuff = NULL;
 unsigned short Status;
 unsigned short uiIndex;
 
-Status = ADCIntStatus(ADC_BASE, ADC_CH_2);
-ADCIntClear(ADC_BASE, ADC_CH_2,Status|ADC_DMA_DONE);
-ulMode = MAP_uDMAChannelModeGet(UDMA_CH16_ADC_CH2 | UDMA_PRI_SELECT);
+
+float value;
+
+Status = ADCIntStatus(ADC_BASE, ADC_CH_1);
+ADCIntClear(ADC_BASE, ADC_CH_1,Status|ADC_DMA_DONE);
+ulMode = MAP_uDMAChannelModeGet(UDMA_CH15_ADC_CH1 | UDMA_PRI_SELECT);
 if(ulMode == UDMA_MODE_STOP)
 {
-ulChannelStructIndex = UDMA_CH16_ADC_CH2 | UDMA_PRI_SELECT;
+ulChannelStructIndex = UDMA_CH15_ADC_CH1 | UDMA_PRI_SELECT;
 pDataDumpBuff = &(DmaDataDumpPing[0]);
 }
 else
 {
-ulMode = MAP_uDMAChannelModeGet(UDMA_CH16_ADC_CH2 | UDMA_ALT_SELECT);
+ulMode = MAP_uDMAChannelModeGet(UDMA_CH15_ADC_CH1 | UDMA_ALT_SELECT);
 if(ulMode == UDMA_MODE_STOP)
 {
-ulChannelStructIndex = UDMA_CH16_ADC_CH2 | UDMA_ALT_SELECT;
+ulChannelStructIndex = UDMA_CH15_ADC_CH1 | UDMA_ALT_SELECT;
 pDataDumpBuff = &(DmaDataDumpPong[0]);
 }
 }
@@ -232,8 +236,15 @@ ulControl = (pControlTable[ulChannelStructIndex].ulControl &
 ulControl |= UDMA_MODE_PINGPONG | ((640 - 1) << 4);
 uDMAChannelControlSet(ulChannelStructIndex,ulControl);
 #if 1
-UART_PRINT("\n\rVoltage is %f\n\r",(((float)((pDataDumpBuff[0] >> 2 ) & 0x0FFF))*1.4)/4096); 
-#endif 
+//UART_PRINT("\n\rCount is %d\n\r",count);
+//UART_PRINT("\n\r");
+value = (((float)((pDataDumpBuff[0] >> 2 ) & 0x0FFF))*1.4)/4096 ;
+UART_PRINT("\n\rVoltage is %f\n\r",(((float)((pDataDumpBuff[0] >> 2 ) & 0x0FFF))*1.4)/4096);
+UART_PRINT("\n\r");
+UART_PRINT("\n\rValue is %f\n\r",(float)value);
+UART_PRINT("\n\r");
+//count++;
+#endif
 }
 }
 
@@ -242,18 +253,18 @@ void InitAdcDma( void )
 unsigned short Status;
 
 UDMAInit();
-PinTypeADC(PIN_59,0xFF);
-MAP_uDMAChannelAssign(UDMA_CH16_ADC_CH2);
-UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_PRI_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPing[0]), UDMA_DST_INC_32);
+PinTypeADC(PIN_58,0xFF);
+MAP_uDMAChannelAssign(UDMA_CH15_ADC_CH1);
+UDMASetupTransfer(UDMA_CH15_ADC_CH1|UDMA_PRI_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_1), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPing[0]), UDMA_DST_INC_32);
 
-UDMASetupTransfer(UDMA_CH16_ADC_CH2|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_2), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPong[0]), UDMA_DST_INC_32);
+UDMASetupTransfer(UDMA_CH15_ADC_CH1|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG, 640, UDMA_SIZE_32, UDMA_ARB_1, (void *)(0x4402E874+ADC_CH_1), UDMA_SRC_INC_NONE, (void *)&(DmaDataDumpPong[0]), UDMA_DST_INC_32);
 
-ADCDMAEnable(ADC_BASE, ADC_CH_2);
-ADCIntRegister(ADC_BASE, ADC_CH_2,ADCIntHandler);
-Status = ADCIntStatus(ADC_BASE, ADC_CH_2);
-ADCIntClear(ADC_BASE, ADC_CH_2,Status|ADC_DMA_DONE);
-ADCIntEnable(ADC_BASE, ADC_CH_2,ADC_DMA_DONE);
-ADCChannelEnable(ADC_BASE, ADC_CH_2);
+ADCDMAEnable(ADC_BASE, ADC_CH_1);
+ADCIntRegister(ADC_BASE, ADC_CH_1,ADCIntHandler);
+Status = ADCIntStatus(ADC_BASE, ADC_CH_1);
+ADCIntClear(ADC_BASE, ADC_CH_1,Status|ADC_DMA_DONE);
+ADCIntEnable(ADC_BASE, ADC_CH_1,ADC_DMA_DONE);
+ADCChannelEnable(ADC_BASE, ADC_CH_1);
 ADCEnable(ADC_BASE);
 while(1);
 }
